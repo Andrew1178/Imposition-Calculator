@@ -1,0 +1,137 @@
+{
+  "SideOptions": {
+    "Ink": [
+      {
+        "Text": "1",
+        "Value": 1
+      },
+      {
+        "Text": "2",
+        "Value": 2
+      },
+      {
+        "Text": "3",
+        "Value": 3
+      },
+      {
+        "Text": "4",
+        "Value": 4
+      },
+      {
+        "Text": "5",
+        "Value": 5
+      },
+      {
+        "Text": "6",
+        "Value": 6
+      },
+      {
+        "Text": "7",
+        "Value": 7
+      },
+      {
+        "Text": "8",
+        "Value": 8
+      },
+      {
+        "Text": "None",
+        "Value": 0
+      }
+    ],
+    "Coating": [
+      {
+        "Text": "None",
+        "Value": 0
+      },
+      {
+        "Text": "Gloss varnish",
+        "Value": 1
+      },
+      {
+        "Text": "Dull varnish",
+        "Value": 1
+      },
+      {
+        "Text": "Satin varnish",
+        "Value": 1
+      },
+      {
+        "Text": "Gloss AQ",
+        "Value": 0
+      },
+      {
+        "Text": "Satin AQ",
+        "Value": 0
+      }
+    ]
+  },
+  "SystemVariables": {
+    "BindingLip": 0.25,
+    "HeadTrim": 0.1875,
+    "FootTrim": 0.125,
+    "CutOff": [
+      17.0,
+      17.75,
+      22.0,
+      22.75,
+      23.5,
+      28.0
+    ],
+    "RollSize": [
+      17.5,
+      18.0,
+      19.0,
+      23.5,
+      26.5,
+      35.0,
+      35.5,
+      38.0
+    ],
+    "SheetSize": [
+      "17.5 x 22.5",
+      "18 x 24",
+      "19 x 25",
+      "20 x 26",
+      "20 x 28",
+      "23 x 29",
+      "23 x 35",
+      "23.5 x 34",
+      "24 x 29",
+      "24 x 36",
+      "25 x 38",
+      "25.5 x 38",
+      "26 x 40",
+      "28 x 40",
+      "22.5 x 28.5",
+      "22.5 x 35",
+      "25.5 x 30.5"
+    ],
+    "PrintingStyles": {
+      "Sheet Fed": {
+        "Gripper": 0.5,
+        "SideMargin": 1.0,
+        "TailMargin": 0.5,
+        "Bleeds": 0.125
+      },
+      "Heat Set": {
+        "Gripper": 0.125,
+        "SideMargin": 0.125,
+        "TailMargin": 0.125,
+        "Bleeds": 0.125
+      },
+      "UV": {
+        "Gripper": 0.0,
+        "SideMargin": 0.0,
+        "TailMargin": 0.0,
+        "Bleeds": 0.0
+      },
+      "Digital": {
+        "Gripper": 0.0,
+        "SideMargin": 0.0,
+        "TailMargin": 0.0,
+        "Bleeds": 0.0
+      }
+    }
+  },
+  "PageParameters": "{\"PagesUp\":4,\"PagesAcross\":3,\"PageSizeWidth\":10.0,\"PageSizeHeight\":5.0,\"Bleeds\":0.125,\"PointsPerInch\":72,\"SheetXPosition\":2,\"SheetYPosition\":2,\"IsOptionOneChecked\":true,\"MaxClientViewHeight\":261,\"MaxClientViewWidth\":284,\"OriginalSheetWidth\":40.0,\"OriginalSheetHeight\":28.0,\"UpScaledSheetWidth\":2878.0,\"UpScaledSheetHeight\":2014.0,\"ScalingRatio\":0.0,\"Scale\":null}"
+}
