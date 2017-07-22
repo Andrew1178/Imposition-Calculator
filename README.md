@@ -30,3 +30,5 @@ To install the application for release, you will need to build both projects (In
 Once you filled out your options you should have a printing design which looks something like this:
 
 ![Imposition Calculator printing design example](http://i.imgur.com/aqc73Cl.png)
+
+If you receive any unexpected errors, please let me know via GitHub.
