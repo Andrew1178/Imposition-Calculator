@@ -1,7 +1,7 @@
 # Imposition-Calculator
 The purpose of this application is to create scaled mock-ups of printing designs that can be used for companies whom use web offset printing designs.
 
-This application is built using C#, MVP and WinForms.
+This application is built using C# and WinForms.
 
 The application is currently in beta while being tested upon by an acquaintance of mine. I will continue to update the application as new feature requests are requested and also whenever any bugs are discovered.
 
