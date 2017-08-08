@@ -1,6 +1,4 @@
-﻿using PrintingApp.Models.CustomEventArgs;
-using PrintingApp.Models.SystemVariablesFormAttributes;
-using System;
+﻿using PrintingApp.Models.SystemVariablesFormAttributes;
 using System.Collections.Generic;
 
 namespace PrintingApp.Views {

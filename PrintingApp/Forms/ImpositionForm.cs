@@ -11,6 +11,14 @@ using System.Linq;
 using System.Collections.Generic;
 
 namespace PrintingApp {
+    /// <summary>
+    /// This application works off of the MVP approach (Model-View-Presenter)
+    /// The presenter does not know about the status of the view
+    /// And the view does not have any knowledge on how to perform any calculations
+    /// 
+    /// The view raises any events which it requires and the presenter updates them
+    /// Please see here for more information: https://msdn.microsoft.com/en-us/library/ff649571.aspx
+    /// </summary>
     public partial class ImpositionForm : Form, IImpositionFormView {
         private ImpositionCalculatorPresenter _presenter;
         private readonly SystemVariablesPresenter _systemVariablesFormPresenter;
@@ -18,6 +26,10 @@ namespace PrintingApp {
         private readonly ISystemVariablesManager _systemVariablesManager;
         private readonly IPrintingDesignManager _printingDesignManager;
         private PrintingStyle _printingStyle;
+
+        /* These are the events which dictate how the form operates. I have split them down into their
+        core features
+        */
 
         public event EventHandler<EventArgs> CalculateSheetSizes;
         public event EventHandler<ErrorEventArgs> Error;
@@ -36,6 +48,13 @@ namespace PrintingApp {
         public event EventHandler<EventArgs> SetPrintingDesignFormAsActive;
         public event EventHandler<EventArgs> RefreshData;
 
+        /// <summary>
+        /// Inject all interfaces, assign in constructor and initialise events. 
+        /// </summary>
+        /// <param name="impositionFormManager"></param>
+        /// <param name="systemVariablesManager"></param>
+        /// <param name="systemVariablesFormPresenter"></param>
+        /// <param name="printingDesignManager"></param>
         public ImpositionForm(IImpositionCalculatorManager impositionFormManager, ISystemVariablesManager systemVariablesManager,
             SystemVariablesPresenter systemVariablesFormPresenter, IPrintingDesignManager printingDesignManager) {
             _systemVariablesManager = systemVariablesManager;
@@ -45,12 +64,23 @@ namespace PrintingApp {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// On form load, assign the presenter. This will mean that all events will have methods 
+        /// attached when invoked.
+        /// Also call FormOnLoad to set the page up 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ImpositionForm_Load(object sender, EventArgs e) {
             //Cannot use inject this presenter otherwise you get an inifinte loop of two classes injecting each other
-            //     presenter = new ImpositionCalculatorPresenter(this, signatureSizeManager, systemVariablesManager, systemVariablesFormPresenter, printingDesignManager);
             Presenter = new ImpositionCalculatorPresenter(this, _signatureSizeManager, _systemVariablesManager, _systemVariablesFormPresenter, _printingDesignManager);
 
-            FormOnLoad(this, e);
+            try {
+                FormOnLoad(this, e);
+            }
+            catch (Exception ex) {
+                Error(this, new ErrorEventArgs(ex.Message));
+            }
         }
 
         public int PageCount {
@@ -101,6 +131,7 @@ namespace PrintingApp {
             }
             set => nudGripper.Value = (decimal)value;
         }
+
         public float TailMargin {
             get {
                 return (float)nudTailMargin.Value;
@@ -143,16 +174,14 @@ namespace PrintingApp {
             }
             set => cboInkSide1.SelectedItem = value;
         }
+
         public int SideOneCoatingValue {
             get {
-                //This is because the application tries calculating the final imposition colours on Selected Index changed of the
-                //ink. And the ink's data source gets populated before the coating and therefore it throws a null exception unless you
-                //put this check in.
                 return cboCoatingSide1.SelectedValue == null ? 0 : (int)cboCoatingSide1.SelectedValue;
             }
             set => cboCoatingSide1.SelectedItem = value;
-
         }
+
         public int SideTwoInkValue {
             get {
                 return cboInkSide2.SelectedValue == null ? 0 : (int)cboInkSide2.SelectedValue;
@@ -276,10 +305,12 @@ namespace PrintingApp {
             get => (float)nudOverrideSheetSizeAround.Value;
             set => nudOverrideSheetSizeAround.Value = (decimal)value;
         }
+
         public float OverrideSheetSizeAcross {
             get => (float)nudOverrideSheetSizeAcross.Value;
             set => nudOverrideSheetSizeAcross.Value = (decimal)value;
         }
+
         public string CboSheetSize {
             get => cboSheetSize.Text;
             set => cboSheetSize.SelectedItem = value;
@@ -330,7 +361,6 @@ namespace PrintingApp {
             }
         }
 
-
         public int FinalImpositionOut {
             get {
                 return (int)nudFinalImpositionOut.Value;
@@ -353,18 +383,21 @@ namespace PrintingApp {
             }
             set => txtFinalImpositionSide1.Text = value.ToString();
         }
+
         public int ColourSideTwo {
             get {
                 return string.IsNullOrEmpty(txtFinalImpositionSide2.Text) ? 0 : int.Parse(txtFinalImpositionSide2.Text);
             }
             set => txtFinalImpositionSide2.Text = value.ToString();
         }
+
         public int Plates {
             get {
                 return int.Parse(txtFinalImpositionPlates.Text);
             }
             set => txtFinalImpositionPlates.Text = value.ToString();
         }
+
         public int OverridePlates {
             get => (int)nudOverridePlates.Value; set => nudOverridePlates.Value = value;
         }
@@ -392,10 +425,18 @@ namespace PrintingApp {
             get => radSheetFed.Checked;
             set => radSheetFed.Checked = value;
         }
-        public PrintingStyle PrintingStyleChecked { get { return _printingStyle; } set => _printingStyle = value; }
 
-        public bool IsOptionOneChecked { get => radOption1.Checked; set => radOption1.Checked = value; }
+        public PrintingStyle PrintingStyleChecked {
+            get => _printingStyle;
+            set => _printingStyle = value;
+        }
 
+        public bool IsOptionOneChecked {
+            get => radOption1.Checked;
+            set => radOption1.Checked = value;
+        }
+
+        //Set the Form to be this current form as we will need to use it in the Presenter.
         Form IImpositionFormView.ImpositionForm => this;
 
         public ImpositionCalculatorPresenter Presenter { get => _presenter; set => _presenter = Presenter; }

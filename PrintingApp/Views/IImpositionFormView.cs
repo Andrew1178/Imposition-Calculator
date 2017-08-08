@@ -5,6 +5,9 @@ using System.Windows.Forms;
 
 namespace PrintingApp.Views {
     public enum PrintingStyle { SheetFed, HeatSet, UV, Digital }
+    /// <summary>
+    /// Inherit from difference sections of the Imposition Form to get all properties and events
+    /// </summary>
     public interface IImpositionFormView : ISheetSize, ISides, IOptions, IFinalImposition, IEvents {
         ImpositionCalculatorPresenter Presenter { get; set; }
         Form ImpositionForm { get; }

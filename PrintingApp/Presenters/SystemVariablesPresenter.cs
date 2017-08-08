@@ -10,11 +10,21 @@ namespace PrintingApp.Presenters {
     public class SystemVariablesPresenter {
         private readonly ISystemVariablesView _view;
         private readonly ISystemVariablesManager _systemVariablesManager;
+
+        /// <summary>
+        /// Inject all interfaces, assign in constructor and initialise events. 
+        /// </summary>
+        /// <param name="view"></param>
+        /// <param name="systemVariablesManager"></param>
         public SystemVariablesPresenter(ISystemVariablesView view, ISystemVariablesManager systemVariablesManager) {
             _view = view;
             _systemVariablesManager = systemVariablesManager;
             InitialiseEvents();
         }
+
+        /// <summary>
+        /// Subscribe methods to event
+        /// </summary>
         private void InitialiseEvents() {
             _view.OnFormLoad += DisplayNudSystemVariables;
             _view.OnFormLoad += DisplayCutOffs;
@@ -42,8 +52,10 @@ namespace PrintingApp.Presenters {
             _view.RemoveRollSizeValues += DisplayRollSizes;
 
             _view.SetSystemVariables += SetNudVariables;
+
             _view.Error += LogErrorToView;
             _view.Error += ShowErrorPanel;
+
             _view.ImpositionFormActivated += SetImpositionFormAsActive;
 
             _view.CboPrintingStyleChanged += DisplayCurrentPrintingValues;
@@ -52,6 +64,7 @@ namespace PrintingApp.Presenters {
             _view.ModifyPrintingStyle += DisplayCurrentPrintingValues;
         }
 
+        //NUD - Numeric Up Down (WinForms control)
         private void DisplayNudSystemVariables(object sender, EventArgs e) {
             try {
                 SystemVariables variables = _systemVariablesManager.ReturnNudVariables();
@@ -97,7 +110,8 @@ namespace PrintingApp.Presenters {
 
         private void ValidateCutOffToAdd(object sender, EventArgs e) {
             try {
-                if (_view.CurrentCutOffValues != null && _view.CurrentCutOffValues.Contains(_view.CutOffValueToAdd))
+                if (_view.CurrentCutOffValues != null && 
+                    _view.CurrentCutOffValues.Contains(_view.CutOffValueToAdd))
                     throw new Exception("You cannot add a cut off value which is already present in the list.");
             }
             catch (Exception ex) {
@@ -116,7 +130,8 @@ namespace PrintingApp.Presenters {
 
         private void RemoveCutOffValues(object sender, EventArgs e) {
             try {
-                _systemVariablesManager.DeleteListBoxValues("CutOff", "float", _view.CutOffValuesToRemove.Cast<object>().ToList());
+                _systemVariablesManager.DeleteListBoxValues("CutOff", "float",
+                    _view.CutOffValuesToRemove.Cast<object>().ToList());
             }
             catch (Exception ex) {
                 LogErrorToView(this, new ErrorEventArgs(ex.Message));
@@ -127,6 +142,11 @@ namespace PrintingApp.Presenters {
             _view.IsErrorPanelShown = true;
         }
 
+        /// <summary>
+        /// Display all cut off values and convert them to singles
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DisplayCutOffs(object sender, EventArgs e) {
             try {
                 _view.CurrentCutOffValues = _systemVariablesManager
@@ -139,7 +159,8 @@ namespace PrintingApp.Presenters {
 
         private void ValidateRollSizeToAdd(object sender, EventArgs e) {
             try {
-                if (_view.CurrentRollSizeValues != null && _view.CurrentRollSizeValues.Contains(_view.RollSizeValueToAdd))
+                if (_view.CurrentRollSizeValues != null && 
+                    _view.CurrentRollSizeValues.Contains(_view.RollSizeValueToAdd))
                     throw new Exception("You cannot add a roll size value which is already present in the list.");
             }
             catch (Exception ex) {
@@ -158,13 +179,19 @@ namespace PrintingApp.Presenters {
 
         private void RemoveRollSizeValues(object sender, EventArgs e) {
             try {
-                _systemVariablesManager.DeleteListBoxValues("RollSize", "float", _view.RollSizeValuesToRemove.Cast<object>().ToList());
+                _systemVariablesManager.DeleteListBoxValues("RollSize", "float",
+                    _view.RollSizeValuesToRemove.Cast<object>().ToList());
             }
             catch (Exception ex) {
                 LogErrorToView(this, new ErrorEventArgs(ex.Message));
             }
         }
 
+        /// <summary>
+        /// Display all roll size values and convert all values to singles
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DisplayRollSizes(object sender, EventArgs e) {
             try {
                 _view.CurrentRollSizeValues = _systemVariablesManager
@@ -180,7 +207,8 @@ namespace PrintingApp.Presenters {
                 if (!_view.SheetSizeToAdd.Contains(" "))
                     throw new Exception("The potential sheet size must have a space both before the x and after it.");
 
-                if (_view.CurrentSheetSizeValues != null && _view.CurrentSheetSizeValues.Contains(_view.SheetSizeToAdd))
+                if (_view.CurrentSheetSizeValues != null &&
+                    _view.CurrentSheetSizeValues.Contains(_view.SheetSizeToAdd))
                     throw new Exception("You cannot add a sheet size value which is already present in the list.");
             }
             catch (Exception ex) {
@@ -218,7 +246,8 @@ namespace PrintingApp.Presenters {
 
         private void ModifyPrintingValues(object sender, EventArgs e) {
             try {
-                _systemVariablesManager.ModifyPrintingStyleValues(_view.CurrentPrintingStyle, _view.CurrentPrintingStyleValues);
+                _systemVariablesManager.ModifyPrintingStyleValues(_view.CurrentPrintingStyle,
+                    _view.CurrentPrintingStyleValues);
             }
             catch (Exception ex) {
                 LogErrorToView(this, new ErrorEventArgs(ex.Message));
@@ -227,7 +256,8 @@ namespace PrintingApp.Presenters {
 
         private void DisplayCurrentPrintingValues(object sender, EventArgs e) {
             try {
-                _view.CurrentPrintingStyleValues = _systemVariablesManager.ReturnPrintingStyleValuesBasedOnPassedInStyle(_view.CurrentPrintingStyle);
+                _view.CurrentPrintingStyleValues = _systemVariablesManager
+                    .ReturnPrintingStyleValuesBasedOnPassedInStyle(_view.CurrentPrintingStyle);
             }
             catch (Exception ex) {
                 LogErrorToView(this, new ErrorEventArgs(ex.Message));
@@ -235,7 +265,8 @@ namespace PrintingApp.Presenters {
         }
         private void PopulatePrintingKeysDataSource(object sender, EventArgs e) {
             try {
-                _view.CboPrintingStyleDataSource = _systemVariablesManager.ReturnAllPrintingStyles();
+                _view.CboPrintingStyleDataSource = _systemVariablesManager
+                    .ReturnAllPrintingStyles();
             }
             catch (Exception ex) {
                 LogErrorToView(this, new ErrorEventArgs(ex.Message));

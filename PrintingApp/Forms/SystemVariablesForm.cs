@@ -14,6 +14,10 @@ namespace PrintingApp {
         private SystemVariablesPresenter presenter;
         private readonly ISystemVariablesManager manager;
 
+        /// <summary>
+        /// Inject all interfaces, assign in constructor and initialise events. 
+        /// </summary>
+        /// <param name="_manager"></param>
         public SystemVariablesForm(ISystemVariablesManager _manager) {
             manager = _manager;
             InitializeComponent();
@@ -92,7 +96,7 @@ namespace PrintingApp {
             set {
                 string[] temp = value.ToString().Split('x');
                 nudSheetSizeAround.Value = decimal.Parse(temp[0]);
-                nudSheetSizeAround.Value = decimal.Parse(temp[1]);
+                nudSheetSizeAcross.Value = decimal.Parse(temp[1]);
             }
         }
 
@@ -121,7 +125,6 @@ namespace PrintingApp {
         }
 
         public event EventHandler<EventArgs> SetSystemVariables;
-
         public event EventHandler<EventArgs> OnFormLoad;
         public event EventHandler<ErrorEventArgs> Error;
         public event EventHandler<EventArgs> ImpositionFormActivated;
@@ -134,8 +137,7 @@ namespace PrintingApp {
         public event EventHandler<EventArgs> CboPrintingStyleChanged;
         public event EventHandler<EventArgs> ModifyPrintingStyle;
 
-        private void SetSystemVariables_Load(object sender, EventArgs e) {
-            //Have to do this to avoid a dependency injection loop as the view relies on the presenter and the presenter relies on the view
+        private void SetSystemVariables_Load(object sender, EventArgs e) {           
             presenter = new SystemVariablesPresenter(this, manager);
             try {
                 OnFormLoad(this, e);

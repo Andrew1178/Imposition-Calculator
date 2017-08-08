@@ -8,18 +8,30 @@ using PrintingAppRepository.SystemVariables.Models;
 
 namespace PrintingAppRepository.SystemVariables.Implementation {
     public class SystemVariablesRepository : ISystemVariablesRepository {
+        //Change the file location based on whether we are running in debug or releases
 #if DEBUG
         private readonly string expectedFilePath = $"{Environment.CurrentDirectory.Split(new string[] { "Projects" }, StringSplitOptions.None)[0]}Projects\\PrintingApp\\SetupFiles\\PrintingApp.txt";
 #else
             private readonly string expectedFilePath = $"{Environment.CurrentDirectory}\\SetupFiles\\PrintingApp.txt";
 #endif
 
+        /// <summary>
+        /// This method is a generic method which will store any data which comes from a ListBox, you
+        /// just need to pass in the properties name and the value to add
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <param name="valueToAdd"></param>
         public void AddListBoxValue(string propertyName, object valueToAdd) {
             if (File.Exists(expectedFilePath)) {
                 var currentJsonInFile = JObject.Parse(File.ReadAllText(expectedFilePath));
-                List<object> list = JsonConvert.DeserializeObject<List<object>>(currentJsonInFile["SystemVariables"][propertyName].ToString());
+
+                List<object> list = JsonConvert.DeserializeObject<List<object>>(
+                    currentJsonInFile["SystemVariables"][propertyName].ToString());
+
                 list.Add(valueToAdd);
+
                 currentJsonInFile["SystemVariables"][propertyName] = JsonConvert.SerializeObject(list);
+
                 File.WriteAllText(expectedFilePath, currentJsonInFile.ToString());
             }
             else {
@@ -27,6 +39,13 @@ namespace PrintingAppRepository.SystemVariables.Implementation {
             }
         }
 
+        /// <summary>
+        /// This is a generic method which will delete any list box value(s) you provide
+        /// You must provide the property name and the data type in order to remove the values you wish
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <param name="dataType"></param>
+        /// <param name="valuesToRemove"></param>
         public void DeleteListBoxValues(string propertyName, string dataType, List<object> valuesToRemove) {
             if (File.Exists(expectedFilePath)) {
                 var currentJsonInFile = JObject.Parse(File.ReadAllText(expectedFilePath));
@@ -61,6 +80,11 @@ namespace PrintingAppRepository.SystemVariables.Implementation {
             }
         }
 
+        /// <summary>
+        /// Update any of the printing style attribles
+        /// </summary>
+        /// <param name="printingStyle"></param>
+        /// <param name="valuesToChange"></param>
         public void ModifyPrintingStyleValues(string printingStyle, PrintingStyleClass valuesToChange) {
             if (File.Exists(expectedFilePath)) {
                 var currentJsonInFile = JObject.Parse(File.ReadAllText(expectedFilePath));
@@ -87,6 +111,11 @@ namespace PrintingAppRepository.SystemVariables.Implementation {
             }
         }
 
+        /// <summary>
+        /// This is a generic method which can be used to return any values for a WinForms ListBox control
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
         public List<object> ReturnListBoxValues(string propertyName) {
             if (File.Exists(expectedFilePath)) {
                 var currentJsonInFile = JObject.Parse(File.ReadAllText(expectedFilePath));
@@ -97,6 +126,11 @@ namespace PrintingAppRepository.SystemVariables.Implementation {
             }
         }
 
+        /// <summary>
+        /// Return all WinForms numeric up down control values.
+        /// These are BindingLip, HeadTrim and FootTrim
+        /// </summary>
+        /// <returns></returns>
         public Models.SystemVariables ReturnNudVariables() {
             if (File.Exists(expectedFilePath)) {
                 var currentJsonInFile = JObject.Parse(File.ReadAllText(expectedFilePath))["SystemVariables"];
@@ -133,8 +167,6 @@ namespace PrintingAppRepository.SystemVariables.Implementation {
         public void SetNudVariables(Models.SystemVariables systemVariables) {
             if (File.Exists(expectedFilePath)) {
                 var currentJsonInFile = JObject.Parse(File.ReadAllText(expectedFilePath));
-                //Must specify each nud variable as otherwise I will be setting the others such
-                //as roll size to be an empty list when they may be populated
                 currentJsonInFile["SystemVariables"]["BindingLip"] = systemVariables.BindingLip;
                 currentJsonInFile["SystemVariables"]["HeadTrim"] = systemVariables.HeadTrim;
                 currentJsonInFile["SystemVariables"]["FootTrim"] = systemVariables.FootTrim;

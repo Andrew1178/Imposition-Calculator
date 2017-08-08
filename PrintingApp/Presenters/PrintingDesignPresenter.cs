@@ -13,12 +13,20 @@ namespace PrintingApp.Presenters {
         private readonly IPrintingDesignManager _printingDesignManager;
         private readonly IPrintingDesignView _view;
 
+        /// <summary>
+        /// Inject all interfaces, assign in constructor and initialise events. 
+        /// </summary>
+        /// <param name="printingDesignManager"></param>
+        /// <param name="view"></param>
         public PrintingDesignPresenter(IPrintingDesignManager printingDesignManager, IPrintingDesignView view) {
             _printingDesignManager = printingDesignManager;
             _view = view;
             InitaliseEvents();
         }
 
+        /// <summary>
+        /// Subscribe methods to events
+        /// </summary>
         private void InitaliseEvents() {
             _view.LogErrorToView += ClearPaint;
             _view.LogErrorToView += LogErrorToView;
@@ -28,6 +36,11 @@ namespace PrintingApp.Presenters {
             _view.SetImpositionFormAsActive += SetImpositionFormAsActive;
         }
 
+        /// <summary>
+        /// Make form active
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SetImpositionFormAsActive(object sender, EventArgs e) {
             ImpositionForm form = Application.OpenForms["ImpositionForm"] as ImpositionForm;
             if (form != null) {
@@ -51,10 +64,13 @@ namespace PrintingApp.Presenters {
         }
 
         /// <summary>
-        /// Clear the form and set the background colour to the default one. You have to do this because when Invalidate gets called, it redraws the existing
-        /// on pain methods. So once this happens and you resize the form. It looks silly and doesn't work very well as it flickers and keeps exisitng rectangles.
-        /// So I have set the background colour to cover these existing rectangles. It's not the most elegant solution but I have tried other ways such as
-        /// overriding the OnPaint method and only painting when Invalidate isnt called but this doesn't work due to the way the OnPaint event queues up methods.
+        /// Clear the form and set the background colour to the default one. You have to do this
+        /// because when Invalidate gets called, it redraws the existing on paint methods. 
+        /// So once this happens and you resize the form. It flickers and keeps exisitng rectangles.
+        /// So I have set the background colour to cover these existing rectangles. It's not the most
+        /// elegant solution but I have tried other ways such as overriding the OnPaint method and
+        /// only painting when Invalidate isnt  called but this doesn't work due to the way the
+        /// OnPaint event queues up methods.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -63,7 +79,8 @@ namespace PrintingApp.Presenters {
                 _view.Form.Invalidate();
                 _view.Form.Paint += (se, pe) => {
                     var brush = new SolidBrush(_view.Form.BackColor);
-                    var sheet = new Rectangle(0, 0, _view.Form.ClientRectangle.Width, _view.Form.ClientRectangle.Height);
+                    var sheet = new Rectangle(0, 0, _view.Form.ClientRectangle.Width,
+                        _view.Form.ClientRectangle.Height);
                     pe.Graphics.FillRectangle(brush, sheet);
                     using (var pen = new Pen(brush.Color, 2))
                         pe.Graphics.DrawRectangle(pen, sheet);
@@ -74,11 +91,19 @@ namespace PrintingApp.Presenters {
             }
         }
 
+        /// <summary>
+        /// Resize the design whenever te page gets redrawn
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ResizeDesign(object sender, EventArgs e) {
             try {
-                PagePrintingDesignParameters printingDesignParams = _printingDesignManager.ReturnPagePrintingDesignParams(_view.Form.ClientRectangle.Height,
-                   _view.Form.ClientRectangle.Width);
+                //Return the saved printing parameters
+                PagePrintingDesignParameters printingDesignParams = 
+                    _printingDesignManager.ReturnPagePrintingDesignParams(
+                        _view.Form.ClientRectangle.Height, _view.Form.ClientRectangle.Width);
 
+                //Return the sheet which rectangles will get printed on
                 Rectangle sheet = _printingDesignManager.ReturnSheet(printingDesignParams);
 
                 //Draw the main sheet
@@ -90,7 +115,9 @@ namespace PrintingApp.Presenters {
                         pe.Graphics.DrawRectangle(pen, sheet);
                 };
 
-                List<Rectangle> rectList = _printingDesignManager.ReturnPages(printingDesignParams).ToList();
+                //Return all pages which will be drawn on the sheet
+                List<Rectangle> rectList = _printingDesignManager.ReturnPages(printingDesignParams)
+                    .ToList();
 
                 //Loop around pages list and draw the rectangles
                 for (int i = 0; i < rectList.Count; i++) {
@@ -108,6 +135,7 @@ namespace PrintingApp.Presenters {
                     };
                 }
 
+                //Show the current scale to the user
                 _view.Scale = printingDesignParams.Scale;
             }
             catch (Exception ex) {

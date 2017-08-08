@@ -3,6 +3,9 @@ using PrintingAppRepository.PrintingDesign.Models;
 using PrintingAppRepository.SystemVariables.Models;
 
 namespace InitialSetup.Models {
+    /// <summary>
+    /// Used as a container to store JSON in a readable format
+    /// </summary>
     public class RootJsonObject {
         public RootJsonObject(SideOptions sideOptions, SystemVariables systemVariables) {
             SideOptions = sideOptions;

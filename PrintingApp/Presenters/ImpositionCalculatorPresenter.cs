@@ -13,6 +13,14 @@ using System.Linq;
 using System.Windows.Forms;
 
 namespace PrintingApp.Presenters {
+    /// <summary>
+    /// This is the presenter, it contains most of the logic which is required for the calculator.
+    /// I have opted to use the Manager and Repository approach also. 
+    /// 
+    /// This is used whenever you need to make CRUD request to the DB/File source. I have seperated the
+    /// CRUD funtionality into the Repositories and if anymore modifications need to be made to the
+    /// data, I make these modifications in the Manager and then serve them up to the Presenter.
+    /// </summary>
     public class ImpositionCalculatorPresenter {
         private readonly IImpositionCalculatorManager _impostionCalculatorManager;
         private readonly ISystemVariablesManager _systemVariablesManager;
@@ -22,8 +30,19 @@ namespace PrintingApp.Presenters {
         private PagePrintingDesignParameters _printingAppParameters;
         private readonly IImpositionFormView _view;
 
-        public ImpositionCalculatorPresenter(IImpositionFormView View, IImpositionCalculatorManager impositionCalculatorManager,
-            ISystemVariablesManager systemVariablesManager, SystemVariablesPresenter systemVariablesFormPresenter, IPrintingDesignManager printingDesignManager) {
+        /// <summary>
+        /// Inject all interfaces, assign in constructor and initialise events. 
+        /// </summary>
+        /// <param name="View"></param>
+        /// <param name="impositionCalculatorManager"></param>
+        /// <param name="systemVariablesManager"></param>
+        /// <param name="systemVariablesFormPresenter"></param>
+        /// <param name="printingDesignManager"></param>
+        public ImpositionCalculatorPresenter(IImpositionFormView View,
+            IImpositionCalculatorManager impositionCalculatorManager,
+            ISystemVariablesManager systemVariablesManager,
+            SystemVariablesPresenter systemVariablesFormPresenter,
+            IPrintingDesignManager printingDesignManager) {
             _view = View;
             _impostionCalculatorManager = impositionCalculatorManager;
             _systemVariablesManager = systemVariablesManager;
@@ -31,6 +50,10 @@ namespace PrintingApp.Presenters {
             _printingDesignManager = printingDesignManager;
             InitialiseEvents();
         }
+
+        /// <summary>
+        /// This adds all the conscriptions to the views events
+        /// </summary>
         private void InitialiseEvents() {
             _view.FormOnLoad += PopulateInkDataSources;
             _view.FormOnLoad += PopulateCoatingDataSources;
@@ -84,6 +107,11 @@ namespace PrintingApp.Presenters {
             _view.ErrorBoxShown = false;
         }
 
+        /// <summary>
+        /// Set focus to ImpositionForm
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SetPrintingDesignFormAsActive(object sender, EventArgs e) {
             PrintingDesignForm form = Application.OpenForms["PrintingDesignForm"] as PrintingDesignForm;
             if (form != null) {
@@ -93,15 +121,19 @@ namespace PrintingApp.Presenters {
         }
 
         private void CalculateFinalImpositionPlates(object sender, EventArgs e) {
-            //if sheet fed checked, and sheetwise not selected in drop down and sheetsize irregular not select in drop down
             try {
                 if (_view.FinalImpositionOut != 0) {
+                    //If the plates have been manually overridden by the user then assign these as the plates
                     if (_view.OverridePlates != 0) {
                         _view.Plates = _view.OverridePlates;
                     }
+                    /*If the PrintingStlye is SheetFed and the Imposition Value is sheetwise or an
+                     * irregular one sided print then use colour side one as the plate value.
+                     */
                     else if (_view.PrintingStyleChecked == PrintingStyle.SheetFed && (_view.CboImposition != "Sheetwise" || _view.CboImposition != "Irregular S\\Wise")) {
                         _view.Plates = _view.ColourSideOne;
                     }
+                    // If either colour side values have been populated the user must want to use both
                     else if (_view.ColourSideOne != 0 && _view.ColourSideTwo != 0) {
                         _view.Plates = _view.ColourSideOne + _view.ColourSideTwo;
                     }
@@ -130,6 +162,11 @@ namespace PrintingApp.Presenters {
             }
         }
 
+        /// <summary>
+        /// Set the default values for the Imposition Form
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SetDefaultValues(object sender, EventArgs e) {
             try {
                 _view.PagesPerSignature = "2pg";
@@ -142,36 +179,60 @@ namespace PrintingApp.Presenters {
             }
         }
 
+        /// <summary>
+        /// Call manager to request data from the data source and assign these ink values the 
+        /// returned data
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void PopulateInkDataSources(object sender, EventArgs e) {
             try {
                 var data = _impostionCalculatorManager.ReturnInkDataSource();
+
                 _view.InkSideOneDataSource = data;
-                /* Need a copy which doesnt reference value because whenever changing the selected
-            index, it changes any other combo boxes with the same data source */
 
-                var copyOfArray = new List<ComboBoxItem>(data).ToArray();
+                /* Need a fresh list which doesnt reference value because whenever changing the
+                 * selected index on either ink values, it changes both combo boxes */
 
-                _view.InkSideTwoDataSource = copyOfArray;
+                var newInstanceOfInkData = new List<ComboBoxItem>(data).ToArray();
+
+                _view.InkSideTwoDataSource = newInstanceOfInkData;
             }
             catch (Exception ex) {
                 LogErrorToView(this, new ErrorEventArgs(ex.Message));
             }
         }
 
+        /// <summary>
+        /// Call manager to request data from the data source and assign these ink values the 
+        /// returned data
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void PopulateCoatingDataSources(object sender, EventArgs e) {
             try {
                 var data = _impostionCalculatorManager.ReturnCoatingDataSource();
+
                 _view.CoatingSideOneDataSource = data;
-                /* Need a copy which doesnt reference value because whenever changing the selected
-            index, it changes any other combo boxes with the same data source */
-                var copyOfArray = new List<ComboBoxItem>(data).ToArray();
-                _view.CoatingSideTwoDataSource = copyOfArray;
+
+                /* Need a fresh list which doesnt reference value because whenever changing the
+                 * selected index on either ink values, it changes both combo boxes */
+
+                var newInstanceOfCoatingData = new List<ComboBoxItem>(data).ToArray();
+
+                _view.CoatingSideTwoDataSource = newInstanceOfCoatingData;
             }
             catch (Exception ex) {
                 LogErrorToView(this, new ErrorEventArgs(ex.Message));
             }
         }
 
+        /// <summary>
+        /// Show the box which the error message is located and either append onto the error message
+        /// or create a new one
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void LogErrorToView(object sender, ErrorEventArgs e) {
             _view.ErrorBoxShown = true;
             if (_view.ErrorMessage == null) {
@@ -186,6 +247,12 @@ namespace PrintingApp.Presenters {
             _view.PrintingDesignFromBtnVisibility = false;
         }
 
+        /// <summary>
+        /// Determine how to calculate sheet size around based on whether the user has manually
+        /// overridden it or which printing style has been selected
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CalculateSheetSizeAround(object sender, EventArgs e) {
             try {
                 if (_view.OverrideSheetSizeAround != 0) {
@@ -193,12 +260,14 @@ namespace PrintingApp.Presenters {
                 }
                 else if (_view.PrintingStyleChecked == PrintingStyle.SheetFed) {
                     string sheetSizeText = _view.CboSheetSize?.Replace(" ", "");
+
                     if (!string.IsNullOrEmpty(sheetSizeText) && sheetSizeText.Contains('x')) {
                         _view.SheetSizeAround = float.Parse(sheetSizeText.Split('x')[0]);
                     }
                     else if (!string.IsNullOrEmpty(sheetSizeText)) {
                         throw new Exception("Sheet size must also be in the format of: 'number x number'");
                     }
+
                 }
                 else {
                     _view.SheetSizeAround = _view.CutOff;
@@ -209,6 +278,13 @@ namespace PrintingApp.Presenters {
             }
 
         }
+
+        /// <summary>
+        /// Determine how to calculate sheet size across based on whether the user has manually
+        /// overridden it or which printing style has been selected
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CalculateSheetSizeAcross(object sender, EventArgs e) {
             try {
                 if (_view.OverrideSheetSizeAcross != 0) {
@@ -216,12 +292,14 @@ namespace PrintingApp.Presenters {
                 }
                 else if (_view.PrintingStyleChecked == PrintingStyle.SheetFed) {
                     string sheetSizeText = _view.CboSheetSize?.Replace(" ", "");
+
                     if (!string.IsNullOrEmpty(sheetSizeText) && sheetSizeText.Contains('x')) {
                         _view.SheetSizeAcross = float.Parse(sheetSizeText.Split('x')[1]);
                     }
                     else if (!string.IsNullOrEmpty(sheetSizeText)) {
                         throw new Exception("Sheet size must also be in the format of: 'number x number'");
                     }
+
                 }
                 else {
                     _view.SheetSizeAcross = _view.RollSize;
@@ -234,10 +312,18 @@ namespace PrintingApp.Presenters {
 
         private void CalculateSignatureSizeValues(object sender, EventArgs e) {
             try {
-                if (_view.PageCount != 0 && !string.IsNullOrEmpty(_view.PagesPerSignature) && _view.PageSizeLength != 0 && _view.PageSizeWidth != 0) {
+                if (_view.PageCount != 0 && !string.IsNullOrEmpty(_view.PagesPerSignature)
+                    && _view.PageSizeLength != 0 && _view.PageSizeWidth != 0) {
+
                     var systemVariables = _systemVariablesManager.ReturnNudVariables();
-                    _view.SignatureSizeLength = _impostionCalculatorManager.ReturnSignatureSizeLength(new SignatureSizeLength(_view.PagesPerSignature, _view.PageSizeLength, systemVariables.HeadTrim, systemVariables.FootTrim));
-                    _view.SignatureSizeWidth = _impostionCalculatorManager.ReturnSignatureSizeWidth(new SignatureSizeWidth(_view.PagesPerSignature, _view.PageSizeWidth, _view.Bleeds, systemVariables.BindingLip));
+
+                    _view.SignatureSizeLength = _impostionCalculatorManager.ReturnSignatureSizeLength(
+                        new SignatureSizeLength(_view.PagesPerSignature, _view.PageSizeLength,
+                        systemVariables.HeadTrim, systemVariables.FootTrim));
+
+                    _view.SignatureSizeWidth = _impostionCalculatorManager.ReturnSignatureSizeWidth(
+                        new SignatureSizeWidth(_view.PagesPerSignature, _view.PageSizeWidth,
+                        _view.Bleeds, systemVariables.BindingLip));
                 }
                 else {
                     _view.SignatureSizeLength = 0;
@@ -263,9 +349,10 @@ namespace PrintingApp.Presenters {
             try {
                 if (_view.PageSizeLength != 0 && _view.PageSizeWidth != 0 && _view.SignatureSizeWidth != 0 && _view.SignatureSizeLength != 0
                     && _view.SheetSizeAround != 0 && _view.SheetSizeAcross != 0) {
-                    PropertiesToCalculateOptionsWith props = new PropertiesToCalculateOptionsWith(_view.PageSizeWidth, _view.PageSizeLength,
-                        _view.SignatureSizeWidth, _view.SignatureSizeLength, _view.SheetSizeAround, _view.SheetSizeAcross, _view.Gripper,
-                        _view.TailMargin, _view.Bleeds, _view.SideMargin);
+                    PropertiesToCalculateOptionsWith props = new PropertiesToCalculateOptionsWith(
+                        _view.PageSizeWidth, _view.PageSizeLength, _view.SignatureSizeWidth,
+                        _view.SignatureSizeLength, _view.SheetSizeAround, _view.SheetSizeAcross,
+                        _view.Gripper, _view.TailMargin, _view.Bleeds, _view.SideMargin);
 
                     var option = _impostionCalculatorManager.ReturnFinalOptionOne(props);
 
@@ -285,9 +372,10 @@ namespace PrintingApp.Presenters {
             try {
                 if (_view.PageSizeLength != 0 && _view.PageSizeWidth != 0 && _view.SignatureSizeWidth != 0 && _view.SignatureSizeLength != 0
                     && _view.SheetSizeAround != 0 && _view.SheetSizeAcross != 0) {
-                    PropertiesToCalculateOptionsWith props = new PropertiesToCalculateOptionsWith(_view.PageSizeWidth, _view.PageSizeLength,
-                        _view.SignatureSizeWidth, _view.SignatureSizeLength, _view.SheetSizeAround, _view.SheetSizeAcross, _view.Gripper,
-                        _view.TailMargin, _view.Bleeds, _view.SideMargin);
+                    PropertiesToCalculateOptionsWith props = new PropertiesToCalculateOptionsWith(
+                        _view.PageSizeWidth, _view.PageSizeLength, _view.SignatureSizeWidth,
+                        _view.SignatureSizeLength, _view.SheetSizeAround, _view.SheetSizeAcross,
+                        _view.Gripper, _view.TailMargin, _view.Bleeds, _view.SideMargin);
 
                     var option = _impostionCalculatorManager.ReturnFinalOptionTwo(props);
 
@@ -305,11 +393,13 @@ namespace PrintingApp.Presenters {
 
         private void SetOptionOneLabel(object sender, EventArgs e) {
             try {
-                if ((_view.PrintingStyleChecked != PrintingStyle.SheetFed) || (_view.ColourSideOne + _view.ColourSideTwo == 0) || (_view.OptionOneAround == 0)
-                    || (_view.PageSizeLength == 0)) {
+                if ((_view.PrintingStyleChecked != PrintingStyle.SheetFed)
+                    || (_view.ColourSideOne + _view.ColourSideTwo == 0)
+                    || (_view.OptionOneAround == 0) || (_view.PageSizeLength == 0)) {
                     _view.OptionOneMessage = "";
                 }
-                else if ((_view.ColourSideOne == 0 && _view.ColourSideTwo > 0) || (_view.ColourSideOne > 0 && _view.ColourSideTwo == 0)) {
+                else if ((_view.ColourSideOne == 0 && _view.ColourSideTwo > 0)
+                    || (_view.ColourSideOne > 0 && _view.ColourSideTwo == 0)) {
                     _view.OptionOneMessage = "Irregular 1 Side";
                 }
                 else if (_view.OptionOneAcross % 2 == 0) {
@@ -329,10 +419,12 @@ namespace PrintingApp.Presenters {
 
         private void SetOptionTwoLabel(object sender, EventArgs e) {
             try {
-                if ((_view.PrintingStyleChecked != PrintingStyle.SheetFed) || (_view.ColourSideOne + _view.ColourSideTwo == 0)) {
+                if ((_view.PrintingStyleChecked != PrintingStyle.SheetFed)
+                    || (_view.ColourSideOne + _view.ColourSideTwo == 0)) {
                     _view.OptionTwoMessage = "";
                 }
-                else if ((_view.ColourSideOne == 0 && _view.ColourSideTwo > 0) || (_view.ColourSideOne > 0 && _view.ColourSideTwo == 0)) {
+                else if ((_view.ColourSideOne == 0 && _view.ColourSideTwo > 0)
+                    || (_view.ColourSideOne > 0 && _view.ColourSideTwo == 0)) {
                     _view.OptionTwoMessage = "Irregular 1 Side";
                 }
                 else if (_view.OptionTwoAcross % 2 == 0) {
@@ -378,9 +470,14 @@ namespace PrintingApp.Presenters {
             }
         }
 
+        /// <summary>
+        /// Loop around all objects in the form and clear them and/or set them to their default values
+        /// Clear error message and close any open printing designs
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ResetForm(object sender, EventArgs e) {
             try {
-
                 foreach (Control item in _view.ImpositionForm.Controls) {
                     if (item is TextBox) {
                         item.Text = null;
@@ -420,9 +517,15 @@ namespace PrintingApp.Presenters {
             }
         }
 
+        /// <summary>
+        /// Setup any printing parameters which will be used to calculate the printing design
+        /// Close any previously created printing designs
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SetUpPrintingDiagram(object sender, EventArgs e) {
             try {
-                //     Create a new instance of the form
+                // Create a new instance of the form
                 PrintingDesignForm form = new PrintingDesignForm(_printingDesignManager);
 
                 //Create variables based on which option is checked, this is important and is used later down in this method
@@ -452,33 +555,62 @@ namespace PrintingApp.Presenters {
             }
         }
 
+        /// <summary>
+        /// If returned data is not null, convert to single and order by largest values
+        /// Set this data to be the cut off data source
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void PopulateCutOffDataSource(object sender, EventArgs e) {
             try {
-                _view.CutOffDataSource = _systemVariablesManager.ReturnListBoxValues("CutOff")?.ConvertAll(r => Convert.ToSingle(r)).OrderBy(r => r).ToList();
+                _view.CutOffDataSource = _systemVariablesManager.ReturnListBoxValues("CutOff")?
+                    .ConvertAll(r => Convert.ToSingle(r)).OrderBy(r => r).ToList();
             }
             catch (Exception ex) {
                 LogErrorToView(this, new ErrorEventArgs(ex.Message));
             }
         }
 
+
+        /// <summary>
+        /// If returned data is not null, convert to single and order by largest values
+        /// Set this data to be the roll size data source
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void PopulateRollSizeDataSource(object sender, EventArgs e) {
             try {
-                _view.RollSizeDataSource = _systemVariablesManager.ReturnListBoxValues("RollSize")?.ConvertAll(r => Convert.ToSingle(r)).OrderBy(r => r).ToList();
+                _view.RollSizeDataSource = _systemVariablesManager.ReturnListBoxValues("RollSize")?
+                    .ConvertAll(r => Convert.ToSingle(r)).OrderBy(r => r).ToList();
             }
             catch (Exception ex) {
                 LogErrorToView(this, new ErrorEventArgs(ex.Message));
             }
         }
 
+
+        /// <summary>
+        /// If returned data is not null, convert values to string
+        /// Set this data to be the sheet size data source
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void PopulateSheetSizeDataSource(object sender, EventArgs e) {
             try {
-                _view.SheetSizeDataSource = _systemVariablesManager.ReturnListBoxValues("SheetSize")?.Select(r => r.ToString()).ToList();
+                _view.SheetSizeDataSource = _systemVariablesManager.ReturnListBoxValues("SheetSize")?
+                    .Select(r => r.ToString()).ToList();
             }
             catch (Exception ex) {
                 LogErrorToView(this, new ErrorEventArgs(ex.Message));
             }
         }
 
+        /// <summary>
+        /// Once a printing style has been selected, calculate the printing parameters according to
+        /// the system variables returned from the data source
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void PopulatePrintingStyleValues(object sender, EventArgs e) {
             try {
                 string printingStyleSelected = null;
@@ -497,7 +629,9 @@ namespace PrintingApp.Presenters {
                         break;
                 }
 
-                var printingStyleValues = _systemVariablesManager.ReturnPrintingStyleValuesBasedOnPassedInStyle(printingStyleSelected);
+                var printingStyleValues = _systemVariablesManager
+                    .ReturnPrintingStyleValuesBasedOnPassedInStyle(printingStyleSelected);
+
                 _view.Bleeds = printingStyleValues.Bleeds;
                 _view.TailMargin = printingStyleValues.TailMargin;
                 _view.SideMargin = printingStyleValues.SideMargin;

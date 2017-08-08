@@ -10,6 +10,10 @@ namespace PrintingApp.Forms {
         private readonly IPrintingDesignManager _printingAppDesignManager;
         private PrintingDesignPresenter _presenter;
 
+        /// <summary>
+        /// Inject all interfaces, assign in constructor and initialise events. 
+        /// </summary>
+        /// <param name="printingAppDesignManager"></param>
         public PrintingDesignForm(IPrintingDesignManager printingAppDesignManager) {
             _printingAppDesignManager = printingAppDesignManager;
             InitializeComponent();
